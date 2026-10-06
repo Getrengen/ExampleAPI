@@ -1,0 +1,3 @@
+Папки:
+- DTOs
+- Entities
