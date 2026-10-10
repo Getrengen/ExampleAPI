@@ -17,7 +17,7 @@ public class FileService : IFileService
         string fileName = Path.GetFileName(name);
         string filePath = Path.Combine(_currentDirectory, fileName);
 
-        if (!File.Exists(filePath))
+        if (!File.Exists(filePath)|| "TestAPIBD_test_data.db" == fileName )
             return Task.FromResult<Stream?>(null);
 
         Stream stream = File.OpenRead(filePath);
@@ -31,8 +31,11 @@ public class FileService : IFileService
 
         string fileName = Path.GetFileName(file.FileName);
         string filePath = Path.Combine(_currentDirectory, fileName);
-        using FileStream stream = new FileStream(filePath, FileMode.Create);
+        if (File.Exists(filePath))
+            return false;
+        using FileStream stream = new FileStream(filePath, FileMode.CreateNew);
         await file.CopyToAsync(stream);
+        
         return File.Exists(filePath);
     }
 }

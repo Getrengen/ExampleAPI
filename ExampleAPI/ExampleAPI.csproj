@@ -29,7 +29,7 @@
       <None Update="Files\Test.txt">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
-      <None Update="Files\TestAPIBD_test_data.db">
+      <None Update="Infrastructure\TestAPIBD_test_data.db">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>

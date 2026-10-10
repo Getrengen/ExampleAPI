@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+SQLiteBdManager.Initialize();//Создание папки с sqlite 
 // Add services to the container.
 builder.Services.AddControllers();
 

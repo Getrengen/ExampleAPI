@@ -27,7 +27,7 @@ public partial class MyDbContext : DbContext
     public virtual DbSet<Role> Roles { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlite("Data Source=C:\\Users\\Maxim\\RiderProjects\\ExampleAPI\\ExampleAPI\\Files\\TestAPIBD_test_data.db");
+        => optionsBuilder.UseSqlite(SQLiteBdManager.ConnectionString);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
