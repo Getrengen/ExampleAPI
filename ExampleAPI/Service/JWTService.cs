@@ -25,7 +25,7 @@ public class JWTService
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero,
 
-        NameClaimType = "name",
+        NameClaimType = "login",
         RoleClaimType = "role"
     };
     
@@ -34,7 +34,7 @@ public class JWTService
         var claims = new[]
         {
             new Claim("sub", user.ID.ToString()),
-            new Claim("name", user.Login),
+            new Claim("login", user.Login),
             new Claim("role", user.Role.Name),
         };
 

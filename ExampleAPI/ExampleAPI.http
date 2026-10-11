@@ -1,6 +1,6 @@
 @ExampleAPI_HostAddress = http://localhost:5239
 
-GET {{ExampleAPI_HostAddress}}/weatherforecast/
+GET {{ExampleAPI_HostAddress}}/swagger
 Accept: application/json
 
 ###

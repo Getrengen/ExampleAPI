@@ -17,8 +17,11 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 builder.Services.AddDbContext<MyDbContext>();
 
 builder.Services.AddSingleton<IFileService, FileService>();
+
 builder.Services.AddScoped<AuthRegService>();
 builder.Services.AddScoped<AdminService>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<ManagerService>();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
@@ -53,8 +56,7 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.MapInboundClaims = false;
@@ -75,6 +77,7 @@ app.UseSwaggerUI();
 app.MapControllers();
 
 app.UseStaticFiles();
+
 app.MapGet("/", async context =>
 {
     var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Description.html");

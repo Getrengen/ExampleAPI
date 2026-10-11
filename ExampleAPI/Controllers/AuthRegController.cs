@@ -18,7 +18,7 @@ public class AuthRegController : ControllerBase
 
     [HttpPost("Login")]
     [AllowAnonymous]
-    public async Task<IActionResult> Login([FromQuery] LoginAppUser user)
+    public async Task<IActionResult> Login([FromBody] LoginAppUser user)
     {
         string? token = _authRegService.LoginUser(user);
         
@@ -34,7 +34,7 @@ public class AuthRegController : ControllerBase
 
     [HttpPost("Register")]
     [AllowAnonymous]
-    public async Task<IActionResult> Registration([FromForm] RegAppUser user)
+    public async Task<IActionResult> Registration([FromBody] RegAppUser user)
     {
         if(_authRegService.RegUser(user))
             return Ok();
