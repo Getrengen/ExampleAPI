@@ -21,7 +21,7 @@ public class AuthRegService
             return new Result<JwtTokinDTO>()
             {
                 Status = ResultStatus.InvalidData,
-                Message = "Invalid Login or Password"
+                Message = "Врата распахнутся лишь для того, кто вознесёт логин и пароль, словно две части одной истины."
             };
 
         AppUser? logUser = await _context.AppUsers

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-SQLiteBdManager.Initialize();//Создание папки с sqlite 
+SQLiteDBManager.Initialize();//Создание папки с sqlite 
 // Add services to the container.
 builder.Services.AddControllers();
 
@@ -25,7 +25,6 @@ builder.Services.AddScoped<ManagerService>();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 builder.Services.AddSwaggerGen(options =>
 {
