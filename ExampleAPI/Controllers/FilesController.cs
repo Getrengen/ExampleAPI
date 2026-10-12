@@ -24,7 +24,7 @@ public class FilesController : ControllerBase
         if (!await _fileService.SaveFile(file))
             return BadRequest("Не удалось сохранить файл");
 
-        return Ok($"{file.FileName} has been uploaded");
+        return Ok($"Файл {file.FileName} был успешно загружен");
     }
 
     [HttpGet("see")]

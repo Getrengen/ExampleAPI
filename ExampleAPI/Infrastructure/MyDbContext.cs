@@ -27,7 +27,7 @@ public partial class MyDbContext : DbContext
     public virtual DbSet<Role> Roles { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlite(SQLiteBdManager.ConnectionString);
+        => optionsBuilder.UseSqlite(SQLiteDBManager.ConnectionString);
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

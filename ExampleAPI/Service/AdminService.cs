@@ -1,6 +1,7 @@
 ﻿using ExampleAPI.DTOs;
 using ExampleAPI.Entities;
 using ExampleAPI.Infrastructure;
+using ExampleAPI.Service.EntitiesService;
 using Microsoft.EntityFrameworkCore;
 
 namespace ExampleAPI.Service;
