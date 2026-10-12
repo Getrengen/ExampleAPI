@@ -1,4 +1,5 @@
-﻿using ExampleAPI.DTOs;
+﻿using ExampleAPI.Controllers;
+using ExampleAPI.DTOs;
 using ExampleAPI.Entities;
 using ExampleAPI.Infrastructure;
 using Microsoft.EntityFrameworkCore;
@@ -14,44 +15,74 @@ public class AuthRegService
        
     }
 
-    public string? LoginUser(LoginAppUser user)
+    public async Task<Result<JwtTokinDTO>> LoginUser(LoginAppUser user)
     {
-        if(string.IsNullOrWhiteSpace(user.Login)|| string.IsNullOrWhiteSpace(user.Password)) 
-            return null;
-        
-        AppUser? logUser = _context.AppUsers
+        if (string.IsNullOrWhiteSpace(user.Login) || string.IsNullOrWhiteSpace(user.Password))
+            return new Result<JwtTokinDTO>()
+            {
+                Status = ResultStatus.InvalidData,
+                Message = "Invalid Login or Password"
+            };
+
+        AppUser? logUser = await _context.AppUsers
             .Include(u => u.Role)
-            .FirstOrDefault(u => u.Login == user.Login);
-        
-        if (logUser == null) 
-            return null;
-        
-        if(!HashingService.CheckPassword(logUser, user.Password))
-            return null;
-        
-        return JWTService.CreateToken(logUser);
+            .FirstOrDefaultAsync(u => u.Login == user.Login);
+
+        if (logUser == null ||
+            !HashingService.CheckPassword(logUser, user.Password))
+            return new Result<JwtTokinDTO>
+            {
+                Status = ResultStatus.InvalidData,
+                Message = "Неверный логин или пароль"
+            };
+
+        return new Result<JwtTokinDTO>()
+        {
+            Status = ResultStatus.Success,
+            Data = new JwtTokinDTO(JWTService.CreateToken(logUser), "Bearer")
+        };
+
+    ;
     }
 
-    public bool RegUser(RegAppUser user)
+    public async Task<Result<int>> RegUser(RegAppUser user)
     {
         if(string.IsNullOrWhiteSpace(user.Login)
            || string.IsNullOrWhiteSpace(user.PassHash)
            ||string.IsNullOrWhiteSpace(user.FullName)) 
-            return false;
+            return new Result<int>()
+            {
+                Status = ResultStatus.InvalidData,
+                Message = "Что-то не так с логином, паролем или именем"
+            };
+        
+        if(await _context.AppUsers.AnyAsync(ap => ap.Login == user.Login))
+            return new Result<int>()
+            {
+                Status = ResultStatus.Conflict,
+                Message = "Логин уже есть"
+            };
         
         AppUser? newUser = new()
             {Login = user.Login, PassHash = user.PassHash, FullName = user.FullName, RoleID = 2};
+        
+        if(newUser == null) 
+            return new Result<int>()
+            {
+                Status = ResultStatus.Conflict,
+                Message = "Техническая ошибка"
+            };
 
         newUser = HashingService.HashPassword(newUser, user.PassHash);
         
-        
-        if(newUser == null) 
-            return false;
-        
         _context.AppUsers.Add(newUser);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
         
-        return true;
+        return new Result<int>()
+        {
+            Status = ResultStatus.Success,
+            Data = newUser.ID
+        };
     } 
     
 }

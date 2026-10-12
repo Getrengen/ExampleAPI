@@ -1,4 +1,5 @@
 ﻿using ExampleAPI.DTOs;
+using ExampleAPI.Entities;
 using ExampleAPI.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,25 +21,22 @@ public class AdminController: ControllerBase
     [HttpGet("GetAllUsers")]
     public async Task<IActionResult> GetAllUser()
     {
-        List<TakeInfoOfAppUser> userInfo = _service.GetAllUser();
-        
-        return Ok(userInfo);
+        var result = await _service.GetAllUser();
+        return result.ToActionResult();
     }
 
     [HttpPatch("UpdateUserRole")]
     public async Task<IActionResult> PatchUser([FromQuery]int userID, [FromQuery]int newRoleID)
     {
-        if(_service.PatchUserRole(userID, newRoleID))
-            return Ok();
-        return BadRequest();
+        var result = await _service.PatchUserRole(userID, newRoleID);
+        return result.ToActionResult();
     }
     
     [HttpPut("UpdateUser")]
-    public async Task<IActionResult> PutUser([FromQuery]int userID, [FromQuery]PutAppUser newRoleID)
+    public async Task<IActionResult> PutUser([FromQuery]int userID, [FromBody]PutAppUser newRoleID)
     {
-        if(_service.PutUser(userID, newRoleID))
-            return Ok();
-        return BadRequest();
+        var result = await _service.PutUser(userID, newRoleID);
+        return result.ToActionResult();
     }
     
     

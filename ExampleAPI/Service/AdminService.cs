@@ -15,34 +15,95 @@ public class AdminService
     }
     
     
-    public List<TakeInfoOfAppUser> GetAllUser()
+    public async Task<Result<List<TakeInfoOfAppUser>>> GetAllUser()
     {
-        return _dbContext.AppUsers
+        List<TakeInfoOfAppUser> listUsers = await _dbContext.AppUsers
             .Select(u => new TakeInfoOfAppUser(
                 u.FullName,
                 u.Login,
-                u.Role.Name))
-            .ToList();
+                u.Role.Name)).ToListAsync();
+        return new Result<List<TakeInfoOfAppUser>>()
+        {
+            Status = ResultStatus.Success,
+            Data = listUsers
+        };
     }
 
-    public bool PatchUserRole(int userID, int newRoleID)
+    public async Task<Result<TakeInfoOfAppUser>> PatchUserRole(int userID, int newRoleID)
     {
-        AppUser? g = _dbContext.AppUsers.FirstOrDefault(u=>u.ID == userID);
-        if (g == null) return false;
-        g.RoleID = newRoleID;
-        _dbContext.SaveChanges();
-        return true;
+        AppUser? patchUser = await _dbContext.AppUsers.FirstOrDefaultAsync(u=>u.ID == userID);
+       
+        if (patchUser == null || !_dbContext.Roles.Any(r => r.ID == newRoleID))
+            return new Result<TakeInfoOfAppUser>()
+            {
+                Status = ResultStatus.NotFound,
+                Message = "Пользователь под таким ID не найден"
+            };
+        Role? role = await _dbContext.Roles
+            .FirstOrDefaultAsync(r => r.ID == newRoleID);
+
+        if (role == null)
+            return new Result<TakeInfoOfAppUser>
+            {
+                Status = ResultStatus.NotFound,
+                Message = "Роль не найдена"
+            };
+        
+        patchUser.Role = role;
+        await _dbContext.SaveChangesAsync();
+        
+        return new Result<TakeInfoOfAppUser>()
+        {
+            Status = ResultStatus.Success,
+            Data = new TakeInfoOfAppUser(patchUser.FullName, patchUser.Login, role.Name)
+        };
     }
 
-    public bool PutUser(int userID, PutAppUser user)
+    public async Task<Result<TakeInfoOfAppUser>> PutUser(int userID, PutAppUser user)
     {
-        AppUser? g = _dbContext.AppUsers.FirstOrDefault(u=>u.ID == userID);
-        if (g == null) return false;
-        g.FullName = user.FullName?? g.FullName;
-        g.Login = user.Login?? g.Login;
-        g.RoleID = user.RoleID ?? g.RoleID;
-        _dbContext.SaveChanges();
-        return true;
+        if (string.IsNullOrWhiteSpace(user.Login) || string.IsNullOrWhiteSpace(user.FullName))
+            return new Result<TakeInfoOfAppUser>
+            {
+                Status = ResultStatus.InvalidData,
+                Message = "Логин и ФИО обязательны"
+            };
+        
+        if (await _dbContext.AppUsers.AnyAsync(u => u.Login == user.Login && u.ID != userID))
+            return new Result<TakeInfoOfAppUser>
+            {
+                Status = ResultStatus.Conflict,
+                Message = "Логин уже используется"
+            };
+
+        Role? role = await _dbContext.Roles.FirstOrDefaultAsync(r => r.ID == user.RoleID);
+
+        if (role == null)
+            return new Result<TakeInfoOfAppUser>
+            {
+                Status = ResultStatus.NotFound,
+                Message = "Роль не найдена"
+            };
+        
+        AppUser? putUser = _dbContext.AppUsers.FirstOrDefault(u=>u.ID == userID);
+        
+        if (putUser == null)
+            return new Result<TakeInfoOfAppUser>()
+            {
+                Status = ResultStatus.NotFound,
+                Message = "Пользователь под таким ID не найден"
+            };
+        
+        putUser.FullName = user.FullName;
+        putUser.Login = user.Login;
+        putUser.RoleID = user.RoleID;
+        
+        await _dbContext.SaveChangesAsync();
+        
+        return new Result<TakeInfoOfAppUser>()
+        {
+            Status = ResultStatus.Success,
+            Data = new TakeInfoOfAppUser(putUser.FullName, putUser.Login, putUser.Role.Name)
+        };
     }
     
 }

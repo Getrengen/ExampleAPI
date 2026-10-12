@@ -7,9 +7,9 @@ public partial class Order
 {
     public int ID { get; set; }
 
-    public int? UserID { get; set; }
+    public int UserID { get; set; }
 
-    public DateTime? CreatedDate { get; set; }
+    public DateTime CreatedDate { get; set; }
 
     public virtual ICollection<OrderProduct> OrderProducts { get; set; } = new List<OrderProduct>();
 

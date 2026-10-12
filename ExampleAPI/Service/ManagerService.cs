@@ -1,6 +1,7 @@
 using ExampleAPI.DTOs;
 using ExampleAPI.Entities;
 using ExampleAPI.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 namespace ExampleAPI.Service;
 
@@ -13,32 +14,100 @@ public class ManagerService
         _dbContext = dbContext;
     }
 
-    public bool PatchProduct(int productId, AddGiveProduct  product)
+    public async Task<Result<AddGiveProduct>> PutProduct(int productId, AddGiveProduct  product)
     {
-        Product? productToPatch = _dbContext.Products.FirstOrDefault(p => p.ID == productId);
+        Product? productToPut = await _dbContext.Products.FirstOrDefaultAsync(p => p.ID == productId);
         
-        if (productToPatch == null) return false;
+        if (productToPut == null) 
+            return new Result<AddGiveProduct>()
+            {
+                Status = ResultStatus.NotFound,
+                Message = "Продукта с таким ID не существует"
+            };
 
         if(string.IsNullOrWhiteSpace(product.Description)
-           || string.IsNullOrWhiteSpace(product.Name) 
+           || string.IsNullOrWhiteSpace(product.Name) || product.Price == null
            || product.Price <= 0) 
-            return false;
+            return new Result<AddGiveProduct>()
+            {
+                Status = ResultStatus.InvalidData,
+                Message = "Данные для изменения не должны быть пустыми",
+            };
         
-        productToPatch.Name = product.Name ?? productToPatch.Name;
-        productToPatch.Price = product.Price ?? productToPatch.Price;
-        productToPatch.Description = product.Description ?? productToPatch.Description;
+        productToPut.Name = product.Name;
+        productToPut.Price = product.Price;
+        productToPut.Description = product.Description;
 
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
 
-        return true;
+        return new Result<AddGiveProduct>()
+        {
+            Status = ResultStatus.Success,
+            Data = new AddGiveProduct(productToPut.Name, (int)productToPut.Price, productToPut.Description)
+        };
     }
 
-    public bool AddProduct(AddGiveProduct product)
+    public async Task<Result<AddGiveProduct>> PatchProduct(int productId, PatchProductDTO product)
+    {
+        Product? productToPatch = await _dbContext.Products
+            .FirstOrDefaultAsync(p => p.ID == productId);
+
+        if (productToPatch == null)
+            return new Result<AddGiveProduct>
+            {
+                Status = ResultStatus.NotFound,
+                Message = "Товар не найден"
+            };
+
+        if (product.Name != null)
+        {
+            if (string.IsNullOrWhiteSpace(product.Name))
+                return new Result<AddGiveProduct>
+                {
+                    Status = ResultStatus.InvalidData,
+                    Message = "Название не может быть пустым"
+                };
+
+            productToPatch.Name = product.Name;
+        }
+
+        if (product.Price.HasValue)
+        {
+            if (product.Price.Value <= 0)
+                return new Result<AddGiveProduct>
+                {
+                    Status = ResultStatus.InvalidData,
+                    Message = "Цена должна быть больше нуля"
+                };
+
+            productToPatch.Price = product.Price.Value;
+        }
+
+        if (product.Description != null)
+            productToPatch.Description = product.Description;
+
+        await _dbContext.SaveChangesAsync();
+
+        return new Result<AddGiveProduct>
+        {
+            Status = ResultStatus.Success,
+            Data = new AddGiveProduct(
+                productToPatch.Name,
+                (int)productToPatch.Price,
+                productToPatch.Description)
+        };
+    }
+    
+    public async Task<Result<int>> AddProduct(AddGiveProduct product)
     {
         if (string.IsNullOrWhiteSpace(product.Description)
-            ||string.IsNullOrWhiteSpace(product.Name) || product.Price == null
+            || string.IsNullOrWhiteSpace(product.Name) || product.Price == null
             || product.Price <= 0)
-            return false;
+            return new Result<int>()
+            {
+                Status = ResultStatus.InvalidData,
+                Message = "Все поля товара должны быть заполнены, а цена должна быть больше нуля",
+            };
         
         Product newProduct = new Product()
         {
@@ -46,9 +115,15 @@ public class ManagerService
             Price = product.Price,
             Description = product.Description,
         };
+        
         _dbContext.Products.Add(newProduct);
-        _dbContext.SaveChanges();
-        return true;
+        await _dbContext.SaveChangesAsync();
+        
+        return new Result<int>()
+        {
+            Status = ResultStatus.Success,
+            Data = newProduct.ID,
+        };
     }
     
 }

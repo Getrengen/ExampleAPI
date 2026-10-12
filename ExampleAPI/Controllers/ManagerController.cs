@@ -19,19 +19,28 @@ public class ManagerController : ControllerBase
         _service = service;
     }
 
-    [HttpPatch("Product/{id}")]
+    [HttpPut("Product/{id}")]
     public async Task<IActionResult> UpdateProduct([FromRoute] int id, [FromBody] AddGiveProduct product)
     {
-        if(_service.PatchProduct(id, product))
-            return Ok();
-        return BadRequest();
+        var result = await _service.PutProduct(id, product);
+        return result.ToActionResult();
     }
 
+    [HttpPatch("Product/{id}")]
+    public async Task<IActionResult> PatchProduct([FromRoute] int id, [FromBody] PatchProductDTO product)
+    {
+        var result = await _service.PatchProduct(id, product);
+
+        return result.ToActionResult();
+    }
+    
     [HttpPost("AddProduct")]
     public async Task<IActionResult> AddProduct([FromBody] AddGiveProduct product)
     {
-        if(_service.AddProduct(product))
-            return Ok();
-        return BadRequest();
+        var result = await _service.AddProduct(product);
+        return result.ToActionResult();
     }
 }
+//Для теста есть менеджер Test
+//Login: Manager
+//Password: Test1

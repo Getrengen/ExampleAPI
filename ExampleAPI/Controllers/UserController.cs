@@ -21,48 +21,45 @@ public class UserController: ControllerBase
 
     [HttpGet("GetAllProducts")]
     [AllowAnonymous]
-    public IActionResult GetAllProducts()
+    public async Task<IActionResult> GetAllProducts()
     {
-        return Ok(_service.GetAllProducts());
+        var result = await _service.GetAllProducts();
+        
+        return result.ToActionResult();
     }
     
     [HttpGet("GetMe")]
-    public async Task<IActionResult> GetMe()
+    public IActionResult GetMe()
     {
         if (!int.TryParse(User.FindFirst("sub")?.Value, out int userId))
             return Unauthorized();
         
         var result = _service.GetMe(userId);
 
-        if (result == null)
-            return NotFound();
-
-        return Ok(result);
+        return result.ToActionResult();
     }
 
     [HttpGet("GetOrder")]
-    public async Task<IActionResult> GetOrder()
+    public IActionResult GetOrder()
     {
         if (!int.TryParse(User.FindFirst("sub")?.Value, out int userId))
             return Unauthorized();
         
-        return Ok(_service.GetUserOrders(userId));
+        var result = _service.GetUserOrders(userId);
+        
+        return result.ToActionResult();
     }
 
     [HttpPost("CreateOrder")]
-    public async Task<IActionResult> CreateOrder([FromBody] List<ProductsInOrder> order)
+    public IActionResult CreateOrder([FromBody] List<ProductsInOrder> order)
     {
         if (!int.TryParse(User.FindFirst("sub")?.Value, out int userId))
             return Unauthorized();
         
-        bool isOk = _service.PostNewOrder(order, userId);
+        Result<int> result = _service.PostNewOrder(order, userId);
         
-        if (isOk) 
-            return Ok();
-        
-        return BadRequest();
+        return result.ToActionResult();
     }
-    
     
     
 }

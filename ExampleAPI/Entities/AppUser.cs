@@ -9,11 +9,11 @@ public partial class AppUser
 
     public string Login { get; set; } = null!;
 
-    public string? FullName { get; set; }
+    public string FullName { get; set; }
 
     public string PassHash { get; set; }
 
-    public int? RoleID { get; set; }
+    public int RoleID { get; set; }
 
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 

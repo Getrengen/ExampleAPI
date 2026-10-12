@@ -1,4 +1,5 @@
 ﻿using ExampleAPI.DTOs;
+using ExampleAPI.Entities;
 using ExampleAPI.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,26 +21,18 @@ public class AuthRegController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginAppUser user)
     {
-        string? token = _authRegService.LoginUser(user);
+        var result = await _authRegService.LoginUser(user);
         
-        if (token == null) 
-            return Unauthorized();
-        
-        return Ok(new
-        {
-            access_token = token,
-            token_type = "Bearer"
-        });
+        return result.ToActionResult();
     }
 
     [HttpPost("Register")]
     [AllowAnonymous]
     public async Task<IActionResult> Registration([FromBody] RegAppUser user)
     {
-        if(_authRegService.RegUser(user))
-            return Ok();
+        var result = await _authRegService.RegUser(user);
         
-        return BadRequest();
+        return result.ToActionResult();
     }
 }
 

@@ -1,6 +1,7 @@
 using ExampleAPI.DTOs;
 using ExampleAPI.Entities;
 using ExampleAPI.Infrastructure;
+using Microsoft.EntityFrameworkCore;
 
 namespace ExampleAPI.Service;
 
@@ -13,28 +14,48 @@ public class UserService
         _dbContext = dbContext;
     }
 
-    public List<AddGiveProduct> GetAllProducts()
+    public async Task<Result<List<AddGiveProduct>>> GetAllProducts()
     {
-        return _dbContext.Products
-            .Select(u => new AddGiveProduct(
-                u.Name,
-                u.Price,
-                u.Description)).ToList();
+        var allProducts = await _dbContext.Products
+            .Select(p => new AddGiveProduct(
+                p.Name,
+                (int)p.Price,
+                p.Description))
+            .ToListAsync();
+
+        return new Result<List<AddGiveProduct>>
+        {
+            Status = ResultStatus.Success,
+            Data = allProducts
+        };
     }
 
-    public TakeInfoOfAppUser GetMe(int userID)
+    public Result<TakeInfoOfAppUser> GetMe(int userID)
     {
-        return _dbContext.AppUsers
+        var UserInfo = _dbContext.AppUsers
             .Where(u => u.ID == userID)
             .Select(u => new TakeInfoOfAppUser(
                 u.FullName,
                 u.Login,
                 u.Role.Name)).FirstOrDefault();
+        
+        if (UserInfo == null)
+            return new Result<TakeInfoOfAppUser>()
+            {
+                Status = ResultStatus.NotFound,
+                Message = "Пользователь не найден"
+            };
+        
+        return new Result<TakeInfoOfAppUser>()
+        {
+            Status = ResultStatus.Success,
+            Data = UserInfo
+        };
     }
 
-    public List<GetOrder> GetUserOrders(int userID)
+    public Result<List<GetOrder>> GetUserOrders(int userID)
     {
-        return _dbContext.Orders
+        List<GetOrder> orders = _dbContext.Orders
             .Where(u => u.UserID == userID)
             .Select(o => new GetOrder(
                 o.CreatedDate,
@@ -44,13 +65,45 @@ public class UserService
                         Op.Quantity,
                         Op.Product.Price)).ToList()
             )).ToList();
+
+        return new Result<List<GetOrder>>
+        {
+            Status = ResultStatus.Success,
+            Data = orders
+        };
     }
     
-    public bool PostNewOrder(List<ProductsInOrder> productsID, int userId)
+    public Result<int> PostNewOrder(List<ProductsInOrder> productsID, int userId)
     {
-        if (!productsID.Any() || userId <= 0 ||
-            !_dbContext.AppUsers.Any(u => u.ID == userId))
-            return false;
+        if (productsID == null || productsID.Count == 0)
+            return new Result<int>
+            {
+                Status = ResultStatus.InvalidData,
+                Message = "Заказ пустой"
+            };
+
+        if (userId <= 0 || !_dbContext.AppUsers.Any(u => u.ID == userId))
+            return new Result<int>
+            {
+                Status = ResultStatus.NotFound,
+                Message = "Пользователь не найден"
+            };
+
+        if (productsID.Any(p => p.Quantity <= 0))
+            return new Result<int>
+            {
+                Status = ResultStatus.InvalidData,
+                Message = "Количество товара должно быть больше нуля"
+            };
+        
+        var productIds = productsID.Select(p => p.ProductId).ToList();
+        
+        if (_dbContext.Products.Count(p => productIds.Contains(p.ID)) != productIds.Count)
+            return new Result<int>
+            {
+                Status = ResultStatus.NotFound,
+                Message = "Один или несколько товаров не найдены"
+            };
         
         Order NewOrder = new Order()
         {
@@ -63,12 +116,17 @@ public class UserService
             {
                 ProductID = productsInOrder.ProductId,
                 Quantity = productsInOrder.Quantity,
-                OrderID = NewOrder.ID
             });
+        
         _dbContext.Orders.Add(NewOrder);
+        
         _dbContext.SaveChanges();
         
-        return true;
+        return new Result<int>()
+        {
+            Status = ResultStatus.Success,
+            Data = NewOrder.ID
+        };
     }
     
 }
