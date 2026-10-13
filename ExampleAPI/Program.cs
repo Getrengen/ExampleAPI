@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using ExampleAPI.Infrastructure;
 using ExampleAPI.Service;
+using ExampleAPI.Service.FileS;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
 

@@ -1,4 +1,4 @@
-namespace ExampleAPI.Service;
+namespace ExampleAPI.Service.FileS;
 
 public interface IFileService
 {
