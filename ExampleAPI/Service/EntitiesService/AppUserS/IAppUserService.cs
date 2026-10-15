@@ -10,6 +10,6 @@ public interface IAppUserService
     Task<Result<int>> CreateAsync(CreateAppUserDto dto);
     Task<Result<AppUserDto>> UpdateAsync(int userID, UpdateAppUserDto dto);
     Task<Result<AppUserDto>> ChangeRoleAsync(int userID, int dto);
-    Task<Result<int>> PatchUserPasswordAsync( int userID, string oldPassword, string newPassword);
+    Task<Result<int>> PatchUserPasswordAsync( int userID, ChangePasswordDto dto);
     
 }

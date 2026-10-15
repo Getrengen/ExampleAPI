@@ -8,30 +8,28 @@ public class HashingService
     private static PasswordHasher<AppUser> _hasher =  new PasswordHasher<AppUser>();
 
     /// <summary>
-    /// Пересылать уже найденых пользователей
+    /// Проверяет соответствие пароля сохранённому хешу
     /// </summary>
-    /// <param name="user"><see cref="AppUser"/></param>
-    /// <param name="password"><see cref="string"/></param>
+    /// <param name="user"><see cref="AppUser"/> Пользователь из базы данных</param>
+    /// <param name="password"><see cref="string"/> Пароль для проверки</param>
     /// <returns>Если пароль подходит, то вернет - true <see cref="bool"/></returns>
     public static bool CheckPassword(AppUser? user, string password)
     {
         if(user == null|| string.IsNullOrWhiteSpace(password)) 
             return false;
-        return _hasher.VerifyHashedPassword(user,user.PassHash, password) == PasswordVerificationResult.Success;
+        return _hasher.VerifyHashedPassword(user,user.PassHash, password) != PasswordVerificationResult.Failed;
     }
 
     /// <summary>
-    /// Помогает создать хеш пароля нового пользователя
-    /// При не удаче вернет null
+    /// Создаёт хеш пароля и записывает его в объект пользователя.
     /// </summary>
-    /// <param name="user"><see cref="AppUser"/></param>
-    /// <param name="password"><see cref="string"/></param>
-    /// <returns>При успехе возвращает <see cref="AppUser"/>? с захешированным паролем</returns>
-    public static AppUser? HashPassword(AppUser? user, string password)
+    /// <param name="user"><see cref="AppUser"/> Пользователь, которому устанавливается пароль</param>
+    /// <param name="password"><see cref="string"/> Новый пароль</param>
+    public static void HashPassword(AppUser? user, string password)
     {
         if(user == null|| string.IsNullOrWhiteSpace(password)) 
-            return null;
+            return;
         user.PassHash = _hasher.HashPassword(user, password);
-        return user;
+        
     }
 }

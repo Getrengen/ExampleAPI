@@ -29,10 +29,6 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IAuthRegService, AuthRegService>();
 
-builder.Services.AddScoped<AdminService>();
-builder.Services.AddScoped<UserService>();
-builder.Services.AddScoped<ManagerService>();
-
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>

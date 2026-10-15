@@ -8,7 +8,7 @@ namespace ExampleAPI.Controllers;
 
 
 [ApiController]
-[Route("/[controller]")]
+[Route("api/[controller]")]
 [Authorize]
 public class OrderController: ControllerBase
 {
@@ -19,7 +19,7 @@ public class OrderController: ControllerBase
         _service = service;
     }
 
-    [HttpGet("GetAll")]
+    [HttpGet]
     [Authorize(Roles = "Менеджер")]
     public async Task<IActionResult> GetAll()
     {
@@ -27,15 +27,15 @@ public class OrderController: ControllerBase
         return result.ToActionResult();
     }
     
-    [HttpGet("GetBy/{id}")]
-    [Authorize(Roles = "Менеджер")]
-    public async Task<IActionResult> GetAll(int id)
+    [HttpGet("{id}")]
+    [Authorize(Roles = "Менеджер,Администратор")]
+    public async Task<IActionResult> GetById(int id)
     {
         var result = await _service.GetByIdAsync(id);
         return result.ToActionResult();
     }
 
-    [HttpGet("AllMy")]
+    [HttpGet("My")]
     public async Task<IActionResult> GetAllByUser()
     {
         if (!int.TryParse(User.FindFirst("sub")?.Value, out int userId))
@@ -45,7 +45,7 @@ public class OrderController: ControllerBase
         return result.ToActionResult();
     }
 
-    [HttpPost("CreateNew")]
+    [HttpPost]
     public async Task<IActionResult> CreateList([FromBody] List<PostOrderDto> Products)
     {
         if (!int.TryParse(User.FindFirst("sub")?.Value, out int userId))

@@ -17,10 +17,10 @@ public class AuthRegService : IAuthRegService
        
     }
 
-    public async Task<Result<JwtTokinDTO>> LoginUser(LoginAppUser user)
+    public async Task<Result<JwtTokinDto>> LoginUser(LoginUserDto user)
     {
         if (string.IsNullOrWhiteSpace(user.Login) || string.IsNullOrWhiteSpace(user.Password))
-            return new Result<JwtTokinDTO>()
+            return new Result<JwtTokinDto>()
             {
                 Status = ResultStatus.InvalidData,
                 Message = "Врата распахнутся лишь для того, кто вознесёт логин и пароль, словно две части одной истины."
@@ -32,16 +32,16 @@ public class AuthRegService : IAuthRegService
 
         if (logUser == null ||
             !HashingService.CheckPassword(logUser, user.Password))
-            return new Result<JwtTokinDTO>
+            return new Result<JwtTokinDto>
             {
                 Status = ResultStatus.InvalidData,
                 Message = "Неверный логин или пароль"
             };
 
-        return new Result<JwtTokinDTO>()
+        return new Result<JwtTokinDto>()
         {
             Status = ResultStatus.Success,
-            Data = new JwtTokinDTO(JWTService.CreateToken(logUser), "Bearer")
+            Data = new JwtTokinDto(JWTService.CreateToken(logUser), "Bearer")
         };
 
     ;
@@ -75,7 +75,7 @@ public class AuthRegService : IAuthRegService
                 Message = "Техническая ошибка"
             };
 
-        newUser = HashingService.HashPassword(newUser, user.Password);
+        HashingService.HashPassword(newUser, user.Password);
         
         _context.AppUsers.Add(newUser);
         await _context.SaveChangesAsync();
@@ -106,7 +106,7 @@ public class AuthRegService : IAuthRegService
                     Message = "Пароль не подходит"
                 };
         
-            patchUser = HashingService.HashPassword(patchUser, newPassword);
+            HashingService.HashPassword(patchUser, newPassword);
         
             await _context.SaveChangesAsync();
 

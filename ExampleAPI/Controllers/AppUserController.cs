@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ExampleAPI.Controllers;
 
 [ApiController]
-[Route("/[controller]")]
+[Route("api/[controller]")]
 [Authorize]
 public class AppUserController : ControllerBase
 {
@@ -18,7 +18,7 @@ public class AppUserController : ControllerBase
         _service = service;
     }
 
-    [HttpGet("Users")]
+    [HttpGet]
     [Authorize(Roles = "Администратор")]
     public async Task<IActionResult> Get()
     {
@@ -26,11 +26,11 @@ public class AppUserController : ControllerBase
         return result.ToActionResult();
     }
 
-    [HttpGet("Users/{id}")]
+    [HttpGet("{userID}")]
     [Authorize(Roles = "Администратор")]
-    public async Task<IActionResult> Get([FromQuery]int id)
+    public async Task<IActionResult> Get([FromRoute]int userID)
     {
-        var result = await _service.GetByIdAsync(id);
+        var result = await _service.GetByIdAsync(userID);
         return result.ToActionResult();
     }
     
@@ -45,38 +45,38 @@ public class AppUserController : ControllerBase
         return result.ToActionResult();
     }
 
-    [HttpPost("Register")]
+    [HttpPost]
     [Authorize(Roles = "Администратор")]
-    public async Task<IActionResult> Registration([FromBody] CreateAppUserDto user)
+    public async Task<IActionResult> Create([FromBody] CreateAppUserDto user)
     {
         var result = await _service.CreateAsync(user);
         return result.ToActionResult();
     }
 
-    [HttpPatch("ChangePassword")]
+    [HttpPatch("Me/Password")]
     [Authorize]
-    public async Task<IActionResult> Patch(string oldPassword, string newPassword)
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
     {
         if (!int.TryParse(User.FindFirst("sub")?.Value, out int userId))
             return Unauthorized();
         
-        var result = await _service.PatchUserPasswordAsync(userId, oldPassword, newPassword);
+        var result = await _service.PatchUserPasswordAsync(userId, dto);
         return result.ToActionResult();
     }
 
-    [HttpPut("UpdateUser")]
+    [HttpPut("{userID}")]
     [Authorize(Roles = "Администратор")]
-    public async Task<IActionResult> Update(int userID, [FromBody] UpdateAppUserDto dto)
+    public async Task<IActionResult> Update([FromRoute]int userID, [FromBody] UpdateAppUserDto dto)
     {
         var result = await _service.UpdateAsync(userID, dto);
         return result.ToActionResult();
     }
 
-    [HttpPatch("ChangeUserRole")]
+    [HttpPatch("{userID}/Role")]
     [Authorize(Roles = "Администратор")]
-    public async Task<IActionResult> ChangeUserRole(int userID, int dto)
+    public async Task<IActionResult> ChangeUserRole([FromRoute] int userID, [FromQuery] int roleId)
     {
-        var result = await _service.ChangeRoleAsync(userID, dto);
+        var result = await _service.ChangeRoleAsync(userID, roleId);
         return result.ToActionResult();
     }
     

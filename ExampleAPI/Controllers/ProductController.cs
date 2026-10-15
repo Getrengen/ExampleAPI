@@ -8,7 +8,7 @@ namespace ExampleAPI.Controllers;
 
 
 [ApiController]
-[Route("/[controller]")]
+[Route("api/[controller]")]
 [Authorize]
 public class ProductController: ControllerBase
 {
@@ -26,14 +26,16 @@ public class ProductController: ControllerBase
         return result.ToActionResult();
     }
     
-    [HttpGet("{id}")]
-    public async Task<IActionResult> GetAllById([FromRoute] int id)
+    [HttpGet("{id:int}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetById([FromRoute] int id)
     {
         var result = await _productService.GetByIdAsync(id);
         return result.ToActionResult();
     }
     
     [HttpGet("Search")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAllByName([FromQuery] string name)
     {
         var result = await _productService.GetAllByNameAsync(name);
@@ -41,7 +43,7 @@ public class ProductController: ControllerBase
     }
 
 
-    [HttpPost("Create")]
+    [HttpPost]
     [Authorize(Roles = "Менеджер")]
     public async Task<IActionResult> Create([FromBody] ProductCreateDto newProduct)
     {
@@ -49,7 +51,7 @@ public class ProductController: ControllerBase
         return result.ToActionResult();
     }
 
-    [HttpPut("Change")]
+    [HttpPut("{prodId:int}")]
     [Authorize(Roles = "Менеджер")]
     public async Task<IActionResult> Put([FromRoute] int prodId, [FromBody] ProductCreateDto newProduct)
     {
@@ -57,9 +59,9 @@ public class ProductController: ControllerBase
         return result.ToActionResult();
     }
     
-    [HttpPatch("Change")]
+    [HttpPatch("{prodId:int}")]
     [Authorize(Roles = "Менеджер")]
-    public async Task<IActionResult> Put([FromRoute] int prodId, [FromBody] ProductPatchDto newProduct)
+    public async Task<IActionResult> Patch([FromRoute] int prodId, [FromBody] ProductPatchDto newProduct)
     {
         var result = await _productService.PatchAsync(prodId, newProduct);
         return result.ToActionResult();

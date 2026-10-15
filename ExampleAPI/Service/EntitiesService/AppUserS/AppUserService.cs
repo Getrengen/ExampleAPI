@@ -83,7 +83,7 @@ public class AppUserService : IAppUserService
                 Message = "Техническая ошибка"
             };
 
-        newUser = HashingService.HashPassword(newUser, user.Password);
+        HashingService.HashPassword(newUser, user.Password);
 
         _dbContext.AppUsers.Add(newUser);
         await _dbContext.SaveChangesAsync();
@@ -172,20 +172,32 @@ public class AppUserService : IAppUserService
         };
     }
 
-    public async Task<Result<int>> PatchUserPasswordAsync(int userID, string oldPassword, string newPassword)
+    public async Task<Result<int>> PatchUserPasswordAsync(int userID, ChangePasswordDto dto)
     {
-        AppUser? patchUser = await _dbContext.AppUsers.FirstOrDefaultAsync(u => u.ID == userID);
-
-        if (patchUser == null )
-            return new Result<int>()
+        if (dto == null || string.IsNullOrWhiteSpace(dto.OldPassword) || string.IsNullOrWhiteSpace(dto.NewPassword))
+            return new Result<int>
             {
-                Status = ResultStatus.NotFound,
-                Message = "Пользователь под таким ID не найден"
+                Status = ResultStatus.InvalidData,
+                Message = "Пароли не могут быть пустыми"
             };
         
+        AppUser? patchUser = await _dbContext.AppUsers.FirstOrDefaultAsync(u => u.ID == userID);
+
+        if (patchUser == null || !HashingService.CheckPassword(patchUser, dto.OldPassword))
+            return new Result<int>()
+            {
+                Status = ResultStatus.InvalidData,
+                Message = "Пользователь под таким ID не найден или не правильно введен пароль"
+            };
         
+        if (dto.OldPassword == dto.NewPassword)
+            return new Result<int>
+            {
+                Status = ResultStatus.InvalidData,
+                Message = "Новый пароль должен отличаться от старого"
+            };
         
-        patchUser = HashingService.HashPassword(patchUser, newPassword);
+        HashingService.HashPassword(patchUser, dto.NewPassword);
         
         await _dbContext.SaveChangesAsync();
 

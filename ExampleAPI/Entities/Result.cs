@@ -13,21 +13,25 @@ public class Result<T>
 public enum ResultStatus
 {
     /// <summary>
-    /// <see cref="Ok"/>(result.Data)
+    /// (200 OK). Принимает (result.Data)  
     /// </summary>
     Success,
     /// <summary>
-    /// <see cref="NotFound"/>(result.Message)
+    /// (404 Not Found). Принимает (result.Message)
     /// </summary>
     NotFound,
     /// <summary>
-    /// <see cref="BadRequest"/>(result.Message)
+    /// (400 Bad Request). Принимает (result.Message)
     /// </summary>
     InvalidData,
     /// <summary>
-    /// <see cref="Conflict"/>(result.Message)
+    /// (409 Conflict). Принимает (result.Message)
     /// </summary>
-    Conflict
+    Conflict,
+    /// <summary>
+    /// (201 Created). Принимает (result.Data)
+    /// </summary>
+    Created
 }
 
 /// <summary>
@@ -50,6 +54,7 @@ public static class ResultExtensions
             ResultStatus.NotFound => new NotFoundObjectResult(result.Message),
             ResultStatus.InvalidData => new BadRequestObjectResult(result.Message),
             ResultStatus.Conflict => new ConflictObjectResult(result.Message),
+            ResultStatus.Created => new ObjectResult(result.Data) {StatusCode = StatusCodes.Status201Created},
             _ => new StatusCodeResult(500)
         };
     }

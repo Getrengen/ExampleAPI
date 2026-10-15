@@ -56,18 +56,19 @@ public class ProductService : IProductService
 
     public async Task<Result<List<ProductDto>>> GetAllByNameAsync(string name)
     {
-        var products = await _dbContext.Products
-            .Where(p => p.Name.Contains(name, StringComparison.CurrentCultureIgnoreCase))
-            .Select(u => new ProductDto(
-                u.ID,
-                u.Name,
-                u.Price,
-                u.Description)).ToListAsync();
-
+        var products = await _dbContext.Products.ToListAsync();
+        
+        var result =  products.Where(p => p.Name != null && p.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
+            .Select(p => new ProductDto(
+                p.ID,
+                p.Name,
+                p.Price,
+                p.Description)).ToList();
+        
         return new Result<List<ProductDto>>
         {
             Status = ResultStatus.Success,
-            Data = products
+            Data = result
         };
     }
 

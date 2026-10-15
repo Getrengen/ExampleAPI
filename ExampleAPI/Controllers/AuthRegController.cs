@@ -20,7 +20,7 @@ public class AuthRegController : ControllerBase
 
     [HttpPost("Login")]
     [AllowAnonymous]
-    public async Task<IActionResult> Login([FromBody] LoginAppUser user)
+    public async Task<IActionResult> Login([FromBody] LoginUserDto user)
     {
         var result = await _authRegService.LoginUser(user);
         
