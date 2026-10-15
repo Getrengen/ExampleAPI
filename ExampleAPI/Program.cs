@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using ExampleAPI.Infrastructure;
 using ExampleAPI.Service;
+using ExampleAPI.Service.ApplicationService;
 using ExampleAPI.Service.AuthReg;
 using ExampleAPI.Service.EntitiesService.AppUserS;
 using ExampleAPI.Service.EntitiesService.OrderS;
@@ -28,6 +29,8 @@ builder.Services.AddScoped<IAppUserService, AppUserService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IAuthRegService, AuthRegService>();
+
+builder.Services.AddScoped<ProfileService>();
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();
