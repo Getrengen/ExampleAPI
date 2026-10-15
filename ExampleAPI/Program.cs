@@ -1,6 +1,10 @@
 using System.Text.Json.Serialization;
 using ExampleAPI.Infrastructure;
 using ExampleAPI.Service;
+using ExampleAPI.Service.AuthReg;
+using ExampleAPI.Service.EntitiesService.AppUserS;
+using ExampleAPI.Service.EntitiesService.OrderS;
+using ExampleAPI.Service.EntitiesService.ProductS;
 using ExampleAPI.Service.FileS;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.OpenApi.Models;
@@ -20,7 +24,11 @@ builder.Services.AddDbContext<MyDbContext>();
 
 builder.Services.AddSingleton<IFileService, FileService>();
 
-builder.Services.AddScoped<AuthRegService>();
+builder.Services.AddScoped<IAppUserService, AppUserService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IAuthRegService, AuthRegService>();
+
 builder.Services.AddScoped<AdminService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<ManagerService>();

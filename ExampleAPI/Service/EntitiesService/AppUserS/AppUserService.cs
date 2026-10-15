@@ -172,24 +172,28 @@ public class AppUserService : IAppUserService
         };
     }
 
-    // В норм БД делать просто не активным
-    // public async Task<Result<int>> DeleteAsync(int userID)
-    // {
-    //     AppUser? patchUser = await _context.AppUsers.FirstOrDefaultAsync(u => u.ID == userID);
-    //     if (patchUser == null)
-    //         return new Result<int>()
-    //         {
-    //             Status = ResultStatus.NotFound,
-    //             Message = "Пользователь под таким ID не найден"
-    //         };
-    //     _context.AppUsers.Remove(patchUser);
-    //     
-    //     await _context.SaveChangesAsync();
-    //     
-    //     return new Result<int>()
-    //     {
-    //         Status = ResultStatus.Success,
-    //         Data = userID
-    //     };
-    // }
+    public async Task<Result<int>> PatchUserPasswordAsync(int userID, string oldPassword, string newPassword)
+    {
+        AppUser? patchUser = await _dbContext.AppUsers.FirstOrDefaultAsync(u => u.ID == userID);
+
+        if (patchUser == null )
+            return new Result<int>()
+            {
+                Status = ResultStatus.NotFound,
+                Message = "Пользователь под таким ID не найден"
+            };
+        
+        
+        
+        patchUser = HashingService.HashPassword(patchUser, newPassword);
+        
+        await _dbContext.SaveChangesAsync();
+
+        return new Result<int>()
+        {
+            Status = ResultStatus.Success,
+            Data = patchUser.ID
+        };
+    }
+    
 }

@@ -1,11 +1,13 @@
 ﻿using ExampleAPI.Controllers;
 using ExampleAPI.DTOs;
+using ExampleAPI.DTOs.AppUserDTOs;
 using ExampleAPI.Entities;
 using ExampleAPI.Infrastructure;
 using Microsoft.EntityFrameworkCore;
-namespace ExampleAPI.Service;
 
-public class AuthRegService
+namespace ExampleAPI.Service.AuthReg;
+
+public class AuthRegService : IAuthRegService
 {
     private readonly MyDbContext _context;
 
@@ -45,10 +47,10 @@ public class AuthRegService
     ;
     }
 
-    public async Task<Result<int>> RegUser(RegAppUser user)
+    public async Task<Result<int>> RegUser(CreateAppUserDto user)
     {
         if(string.IsNullOrWhiteSpace(user.Login)
-           || string.IsNullOrWhiteSpace(user.PassHash)
+           || string.IsNullOrWhiteSpace(user.Password)
            ||string.IsNullOrWhiteSpace(user.FullName)) 
             return new Result<int>()
             {
@@ -64,7 +66,7 @@ public class AuthRegService
             };
         
         AppUser? newUser = new()
-            {Login = user.Login, PassHash = user.PassHash, FullName = user.FullName, RoleID = 2};
+            {Login = user.Login, PassHash = user.Password, FullName = user.FullName, RoleID = 2};
         
         if(newUser == null) 
             return new Result<int>()
@@ -73,7 +75,7 @@ public class AuthRegService
                 Message = "Техническая ошибка"
             };
 
-        newUser = HashingService.HashPassword(newUser, user.PassHash);
+        newUser = HashingService.HashPassword(newUser, user.Password);
         
         _context.AppUsers.Add(newUser);
         await _context.SaveChangesAsync();
@@ -83,6 +85,36 @@ public class AuthRegService
             Status = ResultStatus.Success,
             Data = newUser.ID
         };
-    } 
-    
+    }
+
+    public async Task<Result<int>> PatchUserPasswordAsync(int userID, string oldPassword, string newPassword)
+    {
+
+            AppUser? patchUser = await _context.AppUsers.FirstOrDefaultAsync(u => u.ID == userID);
+
+            if (patchUser == null )
+                return new Result<int>()
+                {
+                    Status = ResultStatus.NotFound,
+                    Message = "Пользователь под таким ID не найден"
+                };
+
+            if (!HashingService.CheckPassword(patchUser, oldPassword))
+                return new Result<int>()
+                {
+                    Status = ResultStatus.InvalidData,
+                    Message = "Пароль не подходит"
+                };
+        
+            patchUser = HashingService.HashPassword(patchUser, newPassword);
+        
+            await _context.SaveChangesAsync();
+
+            return new Result<int>()
+            {
+                Status = ResultStatus.Success,
+                Data = patchUser.ID
+            };
+        
+    }
 }
